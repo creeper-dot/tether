@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.28)   # 3.28 起正式支持 C++20 模块
 project(tether LANGUAGES CXX)
+if(APPLE)
+  enable_language(OBJCXX)              # macOS agent 的 .mm 文件（agent/platform/macos）
+endif()
 
 # ---------------------------------------------------------------------------
 # 编译器：必须是 Clang 18+。
@@ -40,6 +43,23 @@ if(TETHER_SANITIZE AND CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 # ---------------------------------------------------------------------------
+# 目标平台。平台相关代码按这个选：
+#   agent   agent/platform/linux|windows|macos/
+#   client  client/ssh/ssh_process_posix.cpp | ssh_process_win.cpp
+#   common  common/io/fd_posix.cpp | fd_win.cpp
+# Windows / macOS 的 agent 后端目前只有空壳，能编译，运行时报 Unsupported。
+# ---------------------------------------------------------------------------
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  set(TETHER_PLATFORM_LINUX ON)
+elseif(WIN32)
+  set(TETHER_PLATFORM_WINDOWS ON)
+elseif(APPLE)
+  set(TETHER_PLATFORM_MACOS ON)
+else()
+  message(FATAL_ERROR "不支持的平台：${CMAKE_SYSTEM_NAME}")
+endif()
+
+# ---------------------------------------------------------------------------
 # 可选功能。MVP 只需要默认打开的几项，其余等做到那一步再打开：
 #   cmake --preset debug -DTETHER_WITH_AUDIO=ON
 #
@@ -47,9 +67,13 @@ endif()
 #   agent:  libx11-dev libxext-dev libxtst-dev libxfixes-dev libxrandr-dev libxdamage-dev
 #   client: libsdl2-dev
 # ---------------------------------------------------------------------------
+include(CMakeDependentOption)
 option(TETHER_WITH_FFMPEG   "H.264/HEVC 编解码 (libavcodec-dev libavutil-dev libswscale-dev)" ON)
-option(TETHER_WITH_UINPUT   "agent 用 /dev/uinput 注入输入（只需内核头文件）"                ON)
-option(TETHER_WITH_PIPEWIRE "Wayland 截屏和输入 (libpipewire-0.3-dev libglib2.0-dev)"      OFF)
+# 下面两项只在 Linux 上可选，其他平台强制关闭
+cmake_dependent_option(TETHER_WITH_UINPUT   "agent 用 /dev/uinput 注入输入（只需内核头文件）"
+  ON  "TETHER_PLATFORM_LINUX" OFF)
+cmake_dependent_option(TETHER_WITH_PIPEWIRE "Wayland 截屏和输入 (libpipewire-0.3-dev libglib2.0-dev)"
+  OFF "TETHER_PLATFORM_LINUX" OFF)
 option(TETHER_WITH_AUDIO    "声音传输 (libopus-dev libpulse-dev)"                            OFF)
 option(TETHER_WITH_QUIC     "QUIC 数据通道 (libmsquic)"                                      OFF)
 
@@ -63,7 +87,8 @@ if(TETHER_WITH_PIPEWIRE)
   pkg_check_modules(PIPEWIRE REQUIRED IMPORTED_TARGET libpipewire-0.3 gio-2.0)
 endif()
 if(TETHER_WITH_AUDIO)
-  pkg_check_modules(AUDIO REQUIRED IMPORTED_TARGET opus libpulse-simple)
+  # Opus 各平台通用；Linux 的 PulseAudio 在 agent/platform/linux 里单独找
+  pkg_check_modules(OPUS REQUIRED IMPORTED_TARGET opus)
 endif()
 if(TETHER_WITH_QUIC)
   # msquic 没有 pkg-config 文件，按实际安装位置调整

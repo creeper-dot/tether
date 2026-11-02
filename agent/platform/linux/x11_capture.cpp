@@ -16,9 +16,9 @@
 //   - 检查 XImage 的 bits_per_pixel、byte_order，不要假设一定是 32 位 BGRA
 //   - XShm 要求 agent 和 X server 在同一台机器（远程桌面的 agent 本来就是）
 
-#include "capture/capturer.h"
+#include "platform/linux/backends.h"
 
-namespace tether::agent {
+namespace tether::agent::linux_backend {
 
 Result<std::unique_ptr<Capturer>> create_x11_capturer(const char*, const CaptureRegion&) {
     // TODO: 定义 class X11Capturer : public Capturer，打开 display 失败时
@@ -26,4 +26,4 @@ Result<std::unique_ptr<Capturer>> create_x11_capturer(const char*, const Capture
     return fail(Errc::Unsupported, "x11 capture not implemented");
 }
 
-}  // namespace tether::agent
+}  // namespace tether::agent::linux_backend

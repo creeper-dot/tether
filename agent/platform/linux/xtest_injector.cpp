@@ -12,16 +12,18 @@
 //     细粒度滚动要自己累加到 120 再发一次
 //   - 相对移动：XTestFakeRelativeMotionEvent
 //   - 记录当前按下的键，release_all() 时逐个抬起
+//   - 键码转换见 keymap.h
 //
 // 依赖：libxtst-dev
 
-#include "input/injector.h"
+#include "platform/linux/backends.h"
+#include "platform/linux/keymap.h"
 
-namespace tether::agent {
+namespace tether::agent::linux_backend {
 
 Result<std::unique_ptr<Injector>> create_xtest_injector(const char*) {
     // TODO: 定义 class XTestInjector : public Injector
     return fail(Errc::Unsupported, "create_xtest_injector not implemented");
 }
 
-}  // namespace tether::agent
+}  // namespace tether::agent::linux_backend

@@ -1,9 +1,10 @@
-// 截屏接口
+// 截屏接口（各平台通用）
 //
-// 实现：
-//   x11_capture       X11（MVP）
-//   pipewire_capture  Wayland，通过 xdg-desktop-portal 拿 PipeWire 流
-//   以后可选：kms_capture（直接读 DRM，需要 root/CAP_SYS_ADMIN，可以截登录界面）
+// 实现在 agent/platform/<平台>/ 下，通过 Platform::create_capturer() 创建：
+//   linux    x11_capture（MVP）、pipewire_capture（Wayland）
+//            以后可选：kms_capture（直接读 DRM，需要 root/CAP_SYS_ADMIN，可以截登录界面）
+//   windows  dxgi_capture（DXGI Desktop Duplication）
+//   macos    sck_capture（ScreenCaptureKit）
 //
 // 参考：
 //   Sunshine/src/platform/common.h   display_t 接口：snapshot()、分辨率变化、硬件帧
@@ -30,7 +31,7 @@ struct RawFrame {
 
 enum class GrabStatus {
     NewFrame,   // 拿到新画面，已写进 out
-    NoChange,   // 画面没变（用 XDamage 或 PipeWire 判断），可以跳过编码省带宽
+    NoChange,   // 画面没变（X11 用 XDamage，DXGI 看 AcquireNextFrame 超时），可以跳过编码省带宽
     Reinit,     // 分辨率或显示器变了，调用方应重建 Capturer 和 Encoder
 };
 
@@ -49,15 +50,5 @@ public:
 struct CaptureRegion {
     int x = 0, y = 0, w = 0, h = 0;
 };
-
-// display 为 nullptr 时用环境变量 DISPLAY
-Result<std::unique_ptr<Capturer>> create_x11_capturer(const char* display,
-                                                      const CaptureRegion& region);
-
-#ifdef TETHER_HAVE_PIPEWIRE
-class PortalSession;
-// 需要先建好 portal 会话（见 portal/portal_session.h）
-Result<std::unique_ptr<Capturer>> create_pipewire_capturer(PortalSession& portal);
-#endif
 
 }  // namespace tether::agent

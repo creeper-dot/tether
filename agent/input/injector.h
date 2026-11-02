@@ -1,9 +1,15 @@
-// 输入注入接口
+// 输入注入接口（各平台通用）
 //
-// 实现：
-//   xtest_injector   X11 XTest 扩展（MVP）
-//   uinput_injector  内核虚拟输入设备，X11/Wayland/控制台都能用，需要 /dev/uinput 权限
-//   portal_injector  Wayland 下通过 xdg-desktop-portal 注入，不需要特殊权限
+// 实现在 agent/platform/<平台>/ 下，通过 Platform::create_injector() 创建：
+//   linux    xtest_injector   X11 XTest 扩展（MVP）
+//            uinput_injector  内核虚拟输入设备，X11/Wayland/控制台都能用，需要 /dev/uinput 权限
+//            portal_injector  Wayland 下通过 xdg-desktop-portal 注入，不需要特殊权限
+//   windows  sendinput_injector
+//   macos    cgevent_injector
+//
+// 按键：协议里的 keysym 是 X11 keysym，scancode 是 evdev 键码（见 client/input/keymap.h）。
+// 每个平台自己把它们转成本地键码：Linux 基本直接用，Windows 转虚拟键码 / 扫描码，
+// macOS 转 CGKeyCode。
 //
 // 参考：
 //   Sunshine/src/input.cpp                  协议输入 -> 平台调用的分发，按键状态跟踪
@@ -13,9 +19,6 @@
 #pragma once
 
 #include <cstdint>
-#include <memory>
-
-import tether.util;
 
 namespace tether::agent {
 
@@ -33,17 +36,5 @@ public:
     // 实现时需要记录哪些键当前是按下的
     virtual void release_all() = 0;
 };
-
-Result<std::unique_ptr<Injector>> create_xtest_injector(const char* display);
-
-#ifdef TETHER_HAVE_UINPUT
-// width/height 是屏幕尺寸，绝对坐标设备需要知道范围
-Result<std::unique_ptr<Injector>> create_uinput_injector(int width, int height);
-#endif
-
-#ifdef TETHER_HAVE_PIPEWIRE
-class PortalSession;
-Result<std::unique_ptr<Injector>> create_portal_injector(PortalSession& portal);
-#endif
 
 }  // namespace tether::agent

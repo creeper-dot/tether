@@ -15,9 +15,9 @@
 //   cursor_clipboard_loop { 每 10ms 查一次光标和剪贴板变化 -> send }
 //   audio_loop            { 读音频 -> opus 编码 -> send(Audio) }
 //
-// 后端选择（X11 / Wayland）：
-//   看环境变量 XDG_SESSION_TYPE。X11 用 x11_capture + xtest_injector；
-//   Wayland 用 portal_session + pipewire_capture + portal_injector
+// 平台无关：截屏、注入等全部通过 Platform 创建（见 platform/platform.h），
+// Session 里不出现任何 X11 / Windows / macOS 的东西。
+// Linux 下 X11 / Wayland 的选择在 platform/linux/linux_platform.cpp 里
 //
 // 参考：
 //   Sunshine/src/stream.cpp         会话怎么管理视频、音频、控制几条线
@@ -36,18 +36,20 @@
 #include <thread>
 #include <vector>
 
+#include "platform/platform.h"
+
 import tether.transport;
 
 namespace tether::agent {
 
 struct SessionConfig {
-    const char* display = nullptr;   // nullptr 表示用 $DISPLAY
     bool enable_quic = true;
 };
 
 class Session {
 public:
-    Session(std::unique_ptr<Transport> transport, const SessionConfig& cfg);
+    Session(std::unique_ptr<Transport> transport, std::unique_ptr<Platform> platform,
+            const SessionConfig& cfg);
     ~Session();
 
     // 阻塞运行直到连接断开，返回进程退出码
@@ -60,11 +62,13 @@ private:
     void audio_loop(std::stop_token st);
 
     std::unique_ptr<Transport> transport_;
+    std::unique_ptr<Platform> platform_;
     SessionConfig cfg_;
     std::stop_source stop_;
 
     // TODO: Capturer、Encoder、Injector、FlowControl、DisplayManager、
     //       CursorMonitor、Clipboard、AudioCapture、OpusEncoder 成员
+    //       （平台相关的都用 platform_->create_xxx() 创建）
 
     std::vector<std::jthread> threads_;   // 放在成员最后：析构时最先 join，其他成员还活着
 };

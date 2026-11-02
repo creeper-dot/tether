@@ -28,6 +28,7 @@ module;
 export module tether.io:framing;
 
 import tether.util;
+import :fd;
 
 export namespace tether {
 
@@ -41,26 +42,26 @@ inline constexpr std::uint32_t kMaxPayload = 64u * 1024 * 1024;  // 4K 未压缩
 
 class FrameWriter {
 public:
-    explicit FrameWriter(int fd) : fd_(fd) {}
+    explicit FrameWriter(NativeHandle h) : fd_(h) {}
 
     // 线程安全
     Status send(std::uint8_t type, std::span<const std::uint8_t> payload);
     Status send(const Message& m) { return send(m.type, m.payload); }
 
 private:
-    int fd_;
+    NativeHandle fd_;
     std::mutex mutex_;
 };
 
 class FrameReader {
 public:
-    explicit FrameReader(int fd) : fd_(fd) {}
+    explicit FrameReader(NativeHandle h) : fd_(h) {}
 
     // 阻塞读一条完整消息。只能由一个线程调用。
     Result<Message> recv();
 
 private:
-    int fd_;
+    NativeHandle fd_;
 };
 
 }  // namespace tether

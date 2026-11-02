@@ -1,8 +1,8 @@
-#include "portal/portal_session.h"
+#include "platform/linux/portal_session.h"
 
 // #include <gio/gio.h>
 
-namespace tether::agent {
+namespace tether::agent::linux_backend {
 
 PortalSession::PortalSession() = default;
 PortalSession::~PortalSession() = default;
@@ -17,4 +17,4 @@ void PortalSession::notify_pointer_button(int, bool) {}
 void PortalSession::notify_pointer_axis(double, double) {}
 void PortalSession::notify_keyboard_keycode(int, bool) {}
 
-}  // namespace tether::agent
+}  // namespace tether::agent::linux_backend

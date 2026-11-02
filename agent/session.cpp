@@ -2,8 +2,9 @@
 
 namespace tether::agent {
 
-Session::Session(std::unique_ptr<Transport> transport, const SessionConfig& cfg)
-    : transport_(std::move(transport)), cfg_(cfg) {}
+Session::Session(std::unique_ptr<Transport> transport, std::unique_ptr<Platform> platform,
+                 const SessionConfig& cfg)
+    : transport_(std::move(transport)), platform_(std::move(platform)), cfg_(cfg) {}
 
 Session::~Session() {
     // TODO: stop_.request_stop()，transport_->close() 让阻塞的 recv 醒来

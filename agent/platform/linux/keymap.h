@@ -1,4 +1,4 @@
-// 键码转换（agent 侧）
+// 键码转换（agent 侧，Linux）
 //
 // 协议里每个按键同时带 keysym（这个键代表什么）和 scancode（物理位置，evdev 编码）。
 // 不同注入方式需要的东西不一样：
@@ -20,7 +20,7 @@
 
 #include <cstdint>
 
-namespace tether::agent {
+namespace tether::agent::linux_backend {
 
 // evdev 键码 -> X11 keycode（就是 +8，单独写成函数是为了让代码意图清楚）
 inline std::uint32_t evdev_to_x11_keycode(std::uint32_t evdev) { return evdev + 8; }
@@ -28,4 +28,4 @@ inline std::uint32_t evdev_to_x11_keycode(std::uint32_t evdev) { return evdev + 
 // 修饰键（Shift、Ctrl、Alt、Super）的 keysym -> evdev 键码；不是修饰键返回 0
 std::uint32_t modifier_keysym_to_evdev(std::uint32_t keysym);
 
-}  // namespace tether::agent
+}  // namespace tether::agent::linux_backend

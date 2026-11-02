@@ -1,7 +1,13 @@
 # 不引入测试框架，每个测试是一个独立程序：返回 0 表示通过，非 0 表示失败。
 # 运行：cmake --build build && ctest --test-dir build --output-on-failure
 
-foreach(name test_bytes test_framing test_messages test_thread_queue)
+set(tests test_bytes test_messages test_thread_queue)
+# test_framing 用 pipe() 造管道，只在 POSIX 上编译（Windows 版要改用 CreatePipe）
+if(NOT WIN32)
+  list(APPEND tests test_framing)
+endif()
+
+foreach(name ${tests})
   add_executable(${name} ${name}.cpp)
   target_link_libraries(${name} PRIVATE tether_common)
   add_test(NAME ${name} COMMAND ${name})

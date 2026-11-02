@@ -18,16 +18,17 @@
 //   - 每组事件后要发一个 SYN_REPORT
 //   - 创建设备后要等一小会儿（几十毫秒）桌面才认到它
 
-#include "input/injector.h"
+#include "platform/linux/backends.h"
+#include "platform/linux/keymap.h"
 
 // #include <fcntl.h>
 // #include <linux/uinput.h>
 
-namespace tether::agent {
+namespace tether::agent::linux_backend {
 
 Result<std::unique_ptr<Injector>> create_uinput_injector(int, int) {
     // TODO: 定义 class UinputInjector : public Injector
     return fail(Errc::Unsupported, "create_uinput_injector not implemented");
 }
 
-}  // namespace tether::agent
+}  // namespace tether::agent::linux_backend

@@ -4,7 +4,11 @@
 // 我们往 ssh 的 stdin 写 = 发给远端 agent；从 ssh 的 stdout 读 = 收 agent 的数据。
 // ssh 的 stderr 不接管，直接输出到当前终端（密码提示、agent 日志都能看到）。
 //
-// 实现步骤（经典的 pipe + fork + exec）：
+// 实现：
+//   ssh_process_posix.cpp   Linux / macOS，pipe + fork + exec（下面详细说明）
+//   ssh_process_win.cpp     Windows，CreatePipe + CreateProcessW（说明在那个文件开头）
+//
+// POSIX 实现步骤（经典的 pipe + fork + exec）：
 //   1. pipe() 两次，得到 to_child[2]、from_child[2]
 //   2. fork()
 //   3. 子进程：dup2 把管道接到 0/1 -> 关掉多余的 fd -> execvp("ssh", argv)
@@ -28,10 +32,13 @@
 #pragma once
 
 #include <string>
-#include <sys/types.h>
 #include <vector>
 
-import tether.util;
+#ifndef _WIN32
+#include <sys/types.h>
+#endif
+
+import tether.io;
 
 namespace tether::client {
 
@@ -46,16 +53,20 @@ public:
     // argv 例：{"ssh", "user@host", "tether-agent", "--stdio"}
     Status start(const std::vector<std::string>& argv);
 
-    int read_fd() const { return read_fd_; }    // 读 = agent 的 stdout
-    int write_fd() const { return write_fd_; }  // 写 = agent 的 stdin
+    NativeHandle read_fd() const { return read_fd_; }    // 读 = agent 的 stdout
+    NativeHandle write_fd() const { return write_fd_; }  // 写 = agent 的 stdin
 
     // 等子进程退出，返回退出码
     int wait();
 
 private:
+#ifdef _WIN32
+    void* process_ = nullptr;    // 进程 HANDLE（PROCESS_INFORMATION.hProcess）
+#else
     pid_t pid_ = -1;
-    int read_fd_ = -1;
-    int write_fd_ = -1;
+#endif
+    NativeHandle read_fd_ = kInvalidHandle;
+    NativeHandle write_fd_ = kInvalidHandle;
 };
 
 }  // namespace tether::client

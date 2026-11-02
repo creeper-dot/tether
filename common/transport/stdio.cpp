@@ -3,7 +3,7 @@ module tether.transport;
 
 namespace tether {
 
-StdioTransport::StdioTransport(int in_fd, int out_fd)
+StdioTransport::StdioTransport(NativeHandle in_fd, NativeHandle out_fd)
     : in_fd_(in_fd), out_fd_(out_fd), reader_(in_fd), writer_(out_fd) {}
 
 StdioTransport::~StdioTransport() = default;
@@ -20,7 +20,7 @@ Result<Message> StdioTransport::recv() {
 }
 
 void StdioTransport::close() {
-    // TODO: 关闭 out_fd_（对端会读到 EOF）。思考：in_fd_ 要不要也关？
+    // TODO: close_handle(out_fd_)（对端会读到 EOF）。思考：in_fd_ 要不要也关？
     (void)in_fd_;
     (void)out_fd_;
 }

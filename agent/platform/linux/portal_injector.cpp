@@ -9,14 +9,15 @@
 //   - 按键用 evdev 键码（和 uinput 一样），用 keymap.h 转换
 //   - 绝对坐标需要带上 PipeWire 流的 node_id
 
-#include "input/injector.h"
-#include "portal/portal_session.h"
+#include "platform/linux/backends.h"
+#include "platform/linux/keymap.h"
+#include "platform/linux/portal_session.h"
 
-namespace tether::agent {
+namespace tether::agent::linux_backend {
 
 Result<std::unique_ptr<Injector>> create_portal_injector(PortalSession&) {
     // TODO
     return fail(Errc::Unsupported, "create_portal_injector not implemented");
 }
 
-}  // namespace tether::agent
+}  // namespace tether::agent::linux_backend

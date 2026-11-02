@@ -1,6 +1,6 @@
-// tether.transport:stdio  基于一对文件描述符的传输层
+// tether.transport:stdio  基于一对管道句柄（NativeHandle）的传输层
 //
-// agent 端：in_fd = 0 (stdin)，out_fd = 1 (stdout)，由 sshd 接到 client
+// agent 端：in = std_input()，out = std_output()，由 sshd 接到 client
 // client 端：in_fd / out_fd 是 ssh 子进程的 stdout / stdin（见 client/ssh/ssh_process.h）
 // 测试时：用 pipe() 造两对 fd 直接接起来，不需要 ssh
 //
@@ -19,7 +19,7 @@ export namespace tether {
 
 class StdioTransport final : public Transport {
 public:
-    StdioTransport(int in_fd, int out_fd);
+    StdioTransport(NativeHandle in, NativeHandle out);
     ~StdioTransport() override;
 
     Status send(Channel ch, const Message& msg) override;
@@ -27,8 +27,8 @@ public:
     void close() override;
 
 private:
-    int in_fd_;
-    int out_fd_;
+    NativeHandle in_fd_;
+    NativeHandle out_fd_;
     FrameReader reader_;
     FrameWriter writer_;
 };

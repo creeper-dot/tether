@@ -14,14 +14,14 @@
 //     grab() 从中取最新一帧
 //   - 光标：可以请求 metadata 模式，光标单独给出，不画进画面
 
-#include "capture/capturer.h"
-#include "portal/portal_session.h"
+#include "platform/linux/backends.h"
+#include "platform/linux/portal_session.h"
 
-namespace tether::agent {
+namespace tether::agent::linux_backend {
 
 Result<std::unique_ptr<Capturer>> create_pipewire_capturer(PortalSession&) {
     // TODO
     return fail(Errc::Unsupported, "pipewire capture not implemented");
 }
 
-}  // namespace tether::agent
+}  // namespace tether::agent::linux_backend

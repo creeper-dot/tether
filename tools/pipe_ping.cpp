@@ -10,7 +10,7 @@
 //
 // 用到：tether.transport（StdioTransport）、tether.protocol（Ping/Pong）、
 //       tether.util（now_us、Logger）
-// 启动子进程的代码写完后可以搬进 client/ssh/ssh_process.cpp
+// 启动子进程的代码写完后可以搬进 client/ssh/ssh_process_posix.cpp
 
 #include <cstdio>
 #include <string_view>
@@ -21,7 +21,7 @@ import tether.transport;
 int main(int argc, char** argv) {
     std::string_view mode = argc >= 2 ? argv[1] : "";
     if (mode == "--server") {
-        // TODO: StdioTransport t(0, 1);
+        // TODO: StdioTransport t(tether::std_input(), tether::std_output());
         //       循环 t.recv()：收到 kPing 就把 type 改成 kPong 原样发回去；Errc::Closed 时退出
         return 0;
     }

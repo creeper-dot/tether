@@ -31,7 +31,7 @@
 
 import tether.util;
 
-namespace tether::agent {
+namespace tether::agent::linux_backend {
 
 class PortalSession {
 public:
@@ -60,4 +60,4 @@ private:
     // TODO: GDBusConnection*、session handle 等
 };
 
-}  // namespace tether::agent
+}  // namespace tether::agent::linux_backend

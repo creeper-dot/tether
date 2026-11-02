@@ -36,7 +36,6 @@ target_sources(tether_common
   PRIVATE
     util/error.cpp
     util/log.cpp
-    io/fd.cpp
     io/framing.cpp
     protocol/protocol.cpp
     transport/stdio.cpp
@@ -44,6 +43,13 @@ target_sources(tether_common
 )
 
 target_link_libraries(tether_common PUBLIC Threads::Threads)
+
+# 平台相关实现：接口（.cppm）只有一份，实现按平台选
+if(WIN32)
+  target_sources(tether_common PRIVATE io/fd_win.cpp)
+else()
+  target_sources(tether_common PRIVATE io/fd_posix.cpp)
+endif()
 
 if(TETHER_WITH_QUIC)
   target_sources(tether_common

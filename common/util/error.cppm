@@ -33,13 +33,13 @@ enum class Errc {
     Truncated,     // 消息读到一半连接断了
     Malformed,     // 数据格式不对：长度不够、长度超限、type 不匹配、有多余字节
     TooLarge,      // 消息或字段超过上限
-    System,        // 系统调用失败，看 Error::sys（errno）
+    System,        // 系统调用失败，看 Error::sys（POSIX 是 errno，Windows 是 GetLastError()）
     Unsupported,   // 对端要求的功能本端不支持
 };
 
 struct Error {
     Errc code = Errc::System;
-    int sys = 0;               // errno，只有 code == System 时有意义
+    int sys = 0;               // errno / GetLastError()，只有 code == System 时有意义
     std::string detail;        // 补充说明，比如 "read" "need 4 bytes, have 2"
 
     // 给人看的完整描述，日志里用
