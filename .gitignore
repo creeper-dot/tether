@@ -1,0 +1,73 @@
+# ==========================================
+# 1. 构建目录与编译产物 (Build Outputs)
+# ==========================================
+/build/
+/out/
+/bin/
+/lib/
+cmake-build-*/
+
+# ==========================================
+# 2. CMake 自动生成文件
+# ==========================================
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+*.ninja
+.cmake/
+
+# ==========================================
+# 3. C++20/23 模块及编译器缓存 (Modules & Caches)
+# ==========================================
+*.pcm
+*.ifc
+.cache/
+.ninja_deps
+.ninja_log
+
+# ==========================================
+# 4. 主流 IDE 与编辑器配置
+# ==========================================
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# JetBrains (CLion / Rider / etc.)
+.idea/
+
+# Visual Studio / MSBuild
+.vs/
+*.suo
+*.user
+*.vcxproj.user
+ipch/
+x64/
+Debug/
+Release/
+
+# ==========================================
+# 5. 操作系统杂项文件
+# ==========================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+.directory
+
+# ==========================================
+# 6. 日志与临时测试文件
+# ==========================================
+*.log
+*.tmp

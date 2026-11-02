@@ -19,7 +19,6 @@ module;
 
 #include <format>
 #include <string_view>
-#include <utility>
 
 export module tether.util:log;
 
@@ -29,41 +28,41 @@ enum class LogLevel { Error = 0, Warn = 1, Info = 2, Debug = 3 };
 
 class Logger {
 public:
-    explicit Logger(const char* name) : name_(name) {}
+    constexpr explicit Logger(std::string_view name) noexcept : name_(name) {}
 
     template <typename... Args>
-    void error(std::format_string<Args...> fmt, Args&&... args) const {
-        log(LogLevel::Error, fmt, std::forward<Args>(args)...);
+    auto error(std::format_string<Args...> fmt, Args&&... args) const noexcept -> void {
+        log(LogLevel::Error, fmt.get(), std::make_format_args(args...));
     }
     template <typename... Args>
-    void warn(std::format_string<Args...> fmt, Args&&... args) const {
-        log(LogLevel::Warn, fmt, std::forward<Args>(args)...);
+    auto warn(std::format_string<Args...> fmt, Args&&... args) const noexcept -> void {
+        log(LogLevel::Warn, fmt.get(), std::make_format_args(args...));
     }
     template <typename... Args>
-    void info(std::format_string<Args...> fmt, Args&&... args) const {
-        log(LogLevel::Info, fmt, std::forward<Args>(args)...);
+    auto info(std::format_string<Args...> fmt, Args&&... args) const noexcept -> void {
+        log(LogLevel::Info, fmt.get(), std::make_format_args(args...));
     }
     template <typename... Args>
-    void debug(std::format_string<Args...> fmt, Args&&... args) const {
-        log(LogLevel::Debug, fmt, std::forward<Args>(args)...);
+    auto debug(std::format_string<Args...> fmt, Args&&... args) const noexcept -> void {
+        log(LogLevel::Debug, fmt.get(), std::make_format_args(args...));
     }
 
-    static void set_level(LogLevel level);
-    static LogLevel level();
-    static void init_from_env();
+    static auto set_level(LogLevel level) noexcept -> void;
+
+    [[nodiscard]] static auto level() noexcept -> LogLevel;
+
+    static auto init_from_env() noexcept -> void;
 
 private:
-    template <typename... Args>
-    void log(LogLevel lv, std::format_string<Args...> fmt, Args&&... args) const {
-        // TODO: 先判断级别，通过了再 std::format(fmt, std::forward<Args>(args)...)，交给 write()
-        (void)lv;
-        (void)fmt;
-        ((void)args, ...);
+    auto log(LogLevel lv, std::string_view fmt, std::format_args args) const noexcept -> void {
+        if (lv <= level()) {
+            write(lv, fmt, args);
+        }
     }
 
-    void write(LogLevel lv, std::string_view msg) const;
+    auto write(LogLevel level, std::string_view fmt, std::format_args args) const noexcept -> void;
 
-    const char* name_;
+    std::string_view name_;
 };
 
 }  // namespace tether
